@@ -1,0 +1,9 @@
+[할 일]
+draft.md -> 플젝 문제정의서 내용들 입력 -> copilot 에게 정렬 작업 요청
+slide 47 이미지 내용 toc.md 에 정리 요청(copilot) -> 'draft.md의 내용을 toc.md에 맞춰서 재작성해줘. document.md 파일에 저장해.'
+'draft.md을 참고하여 prd(product requirement description)을 작성해줘.'
+'전문적인 prd(product requirement description)을 전문적으로 생성하기 위한 에이전트 프롬프트를 생성해줘' -> copilot 'prd' agent 만들기
+해당 agent 로 'draft.md 에 맞춰서 prd 작성해줘'
+
+[메모]
+일부를 확장하거나 개발할 때, 전체 프로젝트의 일관성 검사를 위한 프롬프트도 필요함
