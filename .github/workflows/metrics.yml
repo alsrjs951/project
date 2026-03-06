@@ -1,81 +1,22 @@
-name: Metrics - Lead Time for Changes
+name: Track Lead Time
 
 on:
   pull_request:
     types: [closed]
 
-permissions:
-  contents: read
-  pull-requests: read
-
 jobs:
-  lead-time:
-    if: ${{ github.event.pull_request.merged == true }}
+  track-lead-time:
+    # Run only when PR is merged
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
-      - name: Calculate Lead Time for Changes
-        id: calc
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            const commits = await github.paginate(
-              github.rest.pulls.listCommits,
-              {
-                owner,
-                repo,
-                pull_number: pr.number,
-                per_page: 100
-              }
-            );
-
-            if (!commits.length) {
-              core.setFailed("No commits found for this pull request.");
-              return;
-            }
-
-            const firstCommitAt = commits
-              .map((c) => c.commit?.author?.date || c.commit?.committer?.date)
-              .filter(Boolean)
-              .map((d) => new Date(d))
-              .sort((a, b) => a - b)[0];
-
-            const mergedAt = new Date(pr.merged_at);
-
-            if (Number.isNaN(firstCommitAt.getTime()) || Number.isNaN(mergedAt.getTime())) {
-              core.setFailed("Unable to parse commit or merge timestamps.");
-              return;
-            }
-
-            const leadTimeSeconds = Math.max(0, Math.floor((mergedAt - firstCommitAt) / 1000));
-            const leadTimeHours = (leadTimeSeconds / 3600).toFixed(2);
-
-            core.info(`PR #${pr.number}`);
-            core.info(`First Commit: ${firstCommitAt.toISOString()}`);
-            core.info(`Merge Time  : ${mergedAt.toISOString()}`);
-            core.info(`Lead Time for Changes: ${leadTimeSeconds} seconds (${leadTimeHours} hours)`);
-
-            core.setOutput("first_commit_at", firstCommitAt.toISOString());
-            core.setOutput("merged_at", mergedAt.toISOString());
-            core.setOutput("lead_time_seconds", String(leadTimeSeconds));
-            core.setOutput("lead_time_hours", leadTimeHours);
-
-            await core.summary
-              .addHeading("Lead Time for Changes")
-              .addTable([
-                [{ data: "PR", header: true }, `#${pr.number}`],
-                [{ data: "First Commit (UTC)", header: true }, firstCommitAt.toISOString()],
-                [{ data: "Merged At (UTC)", header: true }, mergedAt.toISOString()],
-                [{ data: "Lead Time (seconds)", header: true }, String(leadTimeSeconds)],
-                [{ data: "Lead Time (hours)", header: true }, leadTimeHours]
-              ])
-              .write();
-
-      - name: Print metric
+      - name: Calculate Lead Time
         run: |
-          echo "Lead Time for Changes (seconds): ${{ steps.calc.outputs.lead_time_seconds }}"
-          echo "Lead Time for Changes (hours): ${{ steps.calc.outputs.lead_time_hours }}"
+          FIRST_COMMIT_TIME="${{ github.event.pull_request.created_at }}"
+          MERGE_TIME="${{ github.event.pull_request.merged_at }}"
+
+          # Time difference in seconds
+          LEAD_TIME=$((($(date -d "$MERGE_TIME" +%s) - $(date -d "$FIRST_COMMIT_TIME" +%s))))
+
+          echo "Lead Time: $LEAD_TIME seconds"
