@@ -1,0 +1,21 @@
+# PR 파일 경로에 따른 라벨 자동 지정 설정
+# 각 라벨 아래에 해당 라벨이 붙을 파일 경로 패턴을 정의합니다.
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - 'docs/**'
+
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**'
+      - '**/*.yml'
+      - '**/*.yaml'
+
+memo:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'memo.txt'
+      - '**/*.txt'
